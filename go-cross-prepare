@@ -1,0 +1,89 @@
+#!/bin/bash
+set -e
+set -o pipefail  # trace ERR through pipes
+set -o errtrace  # trace ERR through 'time command' and other functions
+set -o nounset   ## set -u : exit the script if you try to use an uninitialised variable
+set -o errexit   ## set -e : exit the script if any statement returns a non-true return value
+
+
+function info()
+{
+    echo -e "\033[1;32m$*\033[0m"
+}
+
+function error()
+{
+    echo -e "\033[1;31m$*\033[0m"
+}
+
+unset GOPLATFORMS
+
+eval "$(go env)"
+
+if [[ ${GOROOT_-} || -z $GOROOT ]] ; then
+    # GOROOT is not set, use hg to clone go source?
+    error GOROOT is not set 
+    exit
+fi
+
+if [[ ${GOPLATFORMS-_} || -z $GOPLATFORMS ]] ; then
+    info "Setting default Go platforms..."
+
+    # default platforms
+    # declare -a GOPLATFORMS
+    GOPLATFORMS=('darwin/386' 'darwin/amd64' 'freebsd/386' 'freebsd/amd64' 'freebsd/arm' 'linux/386' 'linux/amd64' 'linux/arm' 'windows/386' 'windows/amd64')
+    for platform in "${GOPLATFORMS[@]}"; do
+        echo " * $platform"
+    done
+fi
+
+function cgo-check {
+    if [[ "${GOHOSTOS}" == "freebsd" ]]; then
+        echo 0
+        return
+    fi
+    if [[ "$1" == "${GOHOSTOS}" && "$2" == ${GOHOSTARCH} ]]; then
+        echo 1
+        return
+    fi
+    echo 0
+}
+
+
+
+function go-cross-prepare()
+{
+    local platforms
+    local gosrcroot
+    local pwd=$(pwd)
+
+    gosrcroot=$GOROOT/src
+
+    info "Changing directory to GOROOT: $GOROOT/src"
+
+    local gobuildworkdir=$HOME/.go/build
+    local buildlog=$gobuildworkdir/build.log
+    mkdir -p $gobuildworkdir
+
+    echo "Please simply use the following command to monitor console output in another window:"
+    echo ""
+    echo "    tail -f $buildlog"
+    echo ""
+
+    cd $gosrcroot
+    if [[ -n $* ]] ; then
+        platforms=($*)
+    elif [[ -n $GOPLATFORMS ]] ; then
+        platforms=($GOPLATFORMS)
+    fi
+
+    for platform in "${GOPLATFORMS[@]}"; do
+        local os=${platform%/*}
+        local arch=${platform#*/}
+        info "==> Building toolchain for $os/$arch..."
+        CGO_ENABLED=$(cgo-check $os $arch) GOOS=$os GOARCH=$arch ./make.bash --no-clean 2> $buildlog 1> $buildlog
+    done
+    cd $pwd
+}
+
+go-cross-prepare $*

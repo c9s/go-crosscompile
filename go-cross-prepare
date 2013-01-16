@@ -81,7 +81,7 @@ function go-cross-prepare()
         local os=${platform%/*}
         local arch=${platform#*/}
         info "==> Building toolchain for $os/$arch..."
-        # CGO_ENABLED=$(cgo-check $os $arch) GOOS=$os GOARCH=$arch ./make.bash --no-clean 2> $buildlog 1> $buildlog
+        CGO_ENABLED=$(cgo-check $os $arch) GOOS=$os GOARCH=$arch ./make.bash --no-clean 2> $buildlog 1> $buildlog
     done
     cd $pwd
     info "Done"

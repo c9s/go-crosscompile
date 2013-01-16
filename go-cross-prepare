@@ -71,19 +71,20 @@ function go-cross-prepare()
     echo ""
 
     cd $gosrcroot
-    if [[ -n $* ]] ; then
+    if [[ "$*" ]] ; then
         platforms=($*)
     elif [[ -n $GOPLATFORMS ]] ; then
         platforms=($GOPLATFORMS)
     fi
 
-    for platform in "${GOPLATFORMS[@]}"; do
+    for platform in "${platforms[@]}"; do
         local os=${platform%/*}
         local arch=${platform#*/}
         info "==> Building toolchain for $os/$arch..."
-        CGO_ENABLED=$(cgo-check $os $arch) GOOS=$os GOARCH=$arch ./make.bash --no-clean 2> $buildlog 1> $buildlog
+        # CGO_ENABLED=$(cgo-check $os $arch) GOOS=$os GOARCH=$arch ./make.bash --no-clean 2> $buildlog 1> $buildlog
     done
     cd $pwd
+    info "Done"
 }
 
 go-cross-prepare $*

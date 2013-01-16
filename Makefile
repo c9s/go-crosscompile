@@ -2,5 +2,5 @@
 all:
 
 install:
-	install -v bin/go-cross $$GOROOT/bin
-	install -v bin/go-cross-install $$GOROOT/bin
+	mkdir -p $$HOME/.go
+	cp -v go-cross.sh $$HOME/.go/go-cross.sh

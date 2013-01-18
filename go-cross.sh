@@ -14,12 +14,12 @@ function cgo-check {
 
 eval "$(go env)"
 
-if [[ -z ${GOROOT_-} || -z $GOROOT ]] ; then
+if [[ -z "$GOROOT" ]] ; then
     # GOROOT is not set, use hg to clone go source?
-    echo GOROOT is not set 
+    echo "GOROOT is not set: $GOROOT"
 fi
 
-if [[ -z ${GOPLATFORMS-_} || -z $GOPLATFORMS ]] ; then
+if [[ -z "$GOPLATFORMS" ]] ; then
     # default platforms
     # declare -a GOPLATFORMS
     GOPLATFORMS=('darwin/386' 'darwin/amd64' 'freebsd/386' 'freebsd/amd64' 'freebsd/arm' 'linux/386' 'linux/amd64' 'linux/arm' 'windows/386' 'windows/amd64')
